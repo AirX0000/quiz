@@ -162,6 +162,10 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 @media(max-width:500px){.answers-grid,.answers-grid-quiz{grid-template-columns:1fr;}.quiz-cards{grid-template-columns:1fr;}}
 
 /* UTILITY CLASSES REPLACING INLINE STYLES */
+
+.d-none { display: none; }
+.w-0 { width: 0%; }
+
 .splash-info { color: var(--muted); font-size: .9rem; max-width: 360px; line-height: 1.6; }
 .page-col { flex-direction: column; }
 .mt-1 { margin-top: 1rem; }
@@ -201,7 +205,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 </div>
 
 <!-- ===== STUDENT: QUIZ LIST ===== -->
-<div id="student-home" class="page page-col" style="display:none;">
+<div id="student-home" class="page page-col">
   <div class="page-header">
     <button class="back-btn" onclick="showPage('splash')">← Назад</button>
     <h1>Выбери квиз</h1>
@@ -210,7 +214,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 </div>
 
 <!-- ===== TEACHER DASHBOARD ===== -->
-<div id="teacher" class="page page-col" style="display:none;">
+<div id="teacher" class="page page-col">
   <div class="page-header">
     <button class="back-btn" onclick="logoutTeacher()">← Выйти</button>
     <h1>Мои квизы</h1>
@@ -223,7 +227,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 </div>
 
 <!-- ===== QUESTION EDITOR PAGE ===== -->
-<div id="q-editor-page" class="page page-col" style="display:none;">
+<div id="q-editor-page" class="page page-col">
   <div class="page-header">
     <button class="back-btn" onclick="showPage('teacher')">← К квизам</button>
     <h1 id="qep-title">Вопросы квиза</h1>
@@ -236,17 +240,17 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 </div>
 
 <!-- ===== WAITING ===== -->
-<div id="waiting" class="page page-col" style="display:none;">
+<div id="waiting" class="page page-col">
   <div class="spinner"></div>
   <div><div class="waiting-title">Загружаем картинку…</div><div class="text-muted">Подбираем изображение</div></div>
 </div>
 
 <!-- ===== QUIZ ===== -->
-<div id="quiz" class="page page-col" style="display:none;">
+<div id="quiz" class="page page-col">
   <div class="quiz-header">
     <button class="quiz-nav-btn" id="prev-btn" onclick="goToPrev()">◀</button>
     <div class="q-counter-text" id="q-counter">1/1</div>
-    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress" style="width:0%;"></div></div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress" class="w-0"></div></div>
     <div class="quiz-score-wrap">
       <div class="quiz-score-points" id="quiz-score-pts">0 ⭐</div>
       <div class="quiz-score-correct" id="quiz-score-cor">0 из 0</div>
@@ -271,7 +275,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 </div>
 
 <!-- ===== RESULTS ===== -->
-<div id="results" class="page page-col" style="display:none;">
+<div id="results" class="page page-col">
   <div class="confetti-wrap" id="confetti"></div>
   <div>
     <div class="results-emoji-wrap" id="results-emoji">🎉</div>
@@ -292,7 +296,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 <div class="modal-overlay hidden" id="login-modal">
   <div class="modal" class="max-w-400">
     <h2>🔐 Вход для преподавателя</h2>
-    <div id="login-setup-note" class="login-setup-note" style="display:none;">👋 Первый вход! Придумайте логин и пароль.</div>
+    <div id="login-setup-note" class="login-setup-note d-none">👋 Первый вход! Придумайте логин и пароль.</div>
     <div class="form-group"><label>Логин</label><input type="text" id="login-user" placeholder="Логин" autocomplete="username"></div>
     <div class="form-group"><label>Пароль</label>
       <div class="relative">
@@ -300,7 +304,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
         <button onclick="togglePass('login-pass',this)" class="pass-toggle-btn">👁</button>
       </div>
     </div>
-    <div id="login-err" class="error-msg" style="display:none;"></div>
+    <div id="login-err" class="error-msg d-none"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('login-modal')">Отмена</button>
       <button class="btn btn-primary" onclick="doLogin()" id="login-submit">Войти</button>
@@ -315,7 +319,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
     <div class="form-group"><label>Текущий пароль</label><input type="password" id="cp-old"></div>
     <div class="form-group"><label>Новый пароль</label><input type="password" id="cp-new" placeholder="Мин. 4 символа"></div>
     <div class="form-group"><label>Повторите</label><input type="password" id="cp-confirm"></div>
-    <div id="cp-err" class="error-msg" style="display:none;"></div>
+    <div id="cp-err" class="error-msg d-none"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('cp-modal')">Отмена</button>
       <button class="btn btn-primary" onclick="doChangePass()">Сохранить</button>
@@ -329,7 +333,7 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
     <h2 id="quiz-modal-title">Новый квиз</h2>
     <div class="form-group"><label>Название квиза</label><input type="text" id="qm-name" placeholder="Например: История России"></div>
     <div class="form-group"><label>Описание (необязательно)</label><input type="text" id="qm-desc" placeholder="Краткое описание темы"></div>
-    <div id="qm-err" class="error-msg" style="display:none;"></div>
+    <div id="qm-err" class="error-msg d-none"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('quiz-modal')">Отмена</button>
       <button class="btn btn-primary" onclick="saveQuizMeta()">Сохранить</button>
