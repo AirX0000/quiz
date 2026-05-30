@@ -77,7 +77,7 @@
   <div class="quiz-header">
     <button class="quiz-nav-btn" id="prev-btn" onclick="goToPrev()">◀</button>
     <div class="q-counter-text" id="q-counter">1/1</div>
-    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress" class="w-0"></div></div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill w-0" id="quiz-progress"></div></div>
     <div class="quiz-score-wrap">
       <div class="quiz-score-points" id="quiz-score-pts">0 ⭐</div>
       <div class="quiz-score-correct" id="quiz-score-cor">0 из 0</div>
@@ -113,7 +113,7 @@
   
   <div class="form-group mt-1 max-w-400 lb-wrap" id="lb-submit-wrap" >
     <input type="text" id="lb-name" placeholder="Твое имя для рейтинга" class="ed-q-box lb-input">
-    <button class="btn btn-primary" onclick="submitResult()" class="w-100">Сохранить результат</button>
+    <button class="btn btn-primary w-100" onclick="submitResult()">Сохранить результат</button>
   </div>
   <div id="leaderboard" class="max-w-400 lb-container" ></div>
 
@@ -128,7 +128,7 @@
 
 <!-- LOGIN -->
 <div class="modal-overlay hidden" id="login-modal">
-  <div class="modal" class="max-w-400">
+  <div class="modal max-w-400">
     <h2>🔐 Вход для преподавателя</h2>
     <div id="login-setup-note" class="login-setup-note d-none">👋 Первый вход! Придумайте логин и пароль.</div>
     <div class="form-group"><label for="login-user">Логин</label><input type="text" id="login-user" placeholder="Логин" autocomplete="username"></div>
@@ -160,7 +160,7 @@
 
 <!-- CHANGE PASS -->
 <div class="modal-overlay hidden" id="cp-modal">
-  <div class="modal" class="max-w-400">
+  <div class="modal max-w-400">
     <h2>🔑 Сменить пароль</h2>
     <div class="form-group"><label for="cp-old">Текущий пароль</label><input type="password" id="cp-old" placeholder="Текущий пароль"></div>
     <div class="form-group"><label for="cp-new">Новый пароль</label><input type="password" id="cp-new" placeholder="Мин. 4 символа"></div>
@@ -175,7 +175,7 @@
 
 <!-- NEW / EDIT QUIZ -->
 <div class="modal-overlay hidden" id="quiz-modal">
-  <div class="modal" class="max-w-460">
+  <div class="modal max-w-460">
     <h2 id="quiz-modal-title">Новый квиз</h2>
     <div class="form-group"><label for="qm-name">Название квиза</label><input type="text" id="qm-name" placeholder="Например: История России"></div>
     <div class="form-group"><label for="qm-desc">Описание (необязательно)</label><input type="text" id="qm-desc" placeholder="Краткое описание темы"></div>
@@ -200,9 +200,9 @@
     <div class="form-group">
       <label>Варианты ответов</label>
       <div class="answers-grid">
-        <div class="answer-input-wrap"><div class="answer-letter" class="bg-c1">A</div><input type="text" id="ed-a" placeholder="Вариант A"></div>
-        <div class="answer-input-wrap"><div class="answer-letter" class="bg-c2">B</div><input type="text" id="ed-b" placeholder="Вариант B"></div>
-        <div class="answer-input-wrap" class="col-span-2"><div class="answer-letter" class="bg-c3">C</div><input type="text" id="ed-c" placeholder="Вариант C"></div>
+        <div class="answer-input-wrap"><div class="answer-letter bg-c1">A</div><input type="text" id="ed-a" placeholder="Вариант A"></div>
+        <div class="answer-input-wrap"><div class="answer-letter bg-c2">B</div><input type="text" id="ed-b" placeholder="Вариант B"></div>
+        <div class="answer-input-wrap col-span-2"><div class="answer-letter bg-c3">C</div><input type="text" id="ed-c" placeholder="Вариант C"></div>
       </div>
     </div>
     <div class="form-group">
