@@ -1,4 +1,6 @@
-// ======================================================
+import os
+
+JS_CONTENT = """// ======================================================
 // INIT SUPABASE
 // ======================================================
 const SUPABASE_URL = 'https://hawlzgobfzsqwaxfpqva.supabase.co';
@@ -591,56 +593,7 @@ window.showPage = function(id) {
 // BOOTSTRAP
 // ======================================================
 checkSession();
+"""
 
-// ======================================================
-// IMPORT / EXPORT
-// ======================================================
-function exportQuiz(id) {
-   const q = quizzes.find(x => x.id === id);
-   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(q, null, 2));
-   const downloadAnchorNode = document.createElement('a');
-   downloadAnchorNode.setAttribute("href", dataStr);
-   downloadAnchorNode.setAttribute("download", q.name + ".json");
-   document.body.appendChild(downloadAnchorNode);
-   downloadAnchorNode.click();
-   downloadAnchorNode.remove();
-}
-
-function triggerImport() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = async e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const text = await file.text();
-        try {
-            const q = JSON.parse(text);
-            const { data: newQuiz, error } = await supabase.from('quizzes').insert({
-                teacher_id: currentUser.id,
-                name: q.name + ' (Импорт)',
-                description: q.description || q.desc
-            }).select().single();
-            
-            if (newQuiz && q.questions) {
-                for (let i = 0; i < q.questions.length; i++) {
-                    const qq = q.questions[i];
-                    await supabase.from('questions').insert({
-                        quiz_id: newQuiz.id,
-                        question_text: qq.question_text || qq.question,
-                        answers: qq.answers,
-                        correct_index: qq.correct_index !== undefined ? qq.correct_index : qq.correct,
-                        keyword: qq.keyword,
-                        order_index: i
-                    });
-                }
-            }
-            await fetchQuizzes();
-            renderTeacher();
-            toast('Квиз импортирован', 'success');
-        } catch(err) {
-            toast('Ошибка импорта', 'error');
-        }
-    };
-    input.click();
-}
+with open('/Users/air/Downloads/quiz/app.js', 'w', encoding='utf-8') as f:
+    f.write(JS_CONTENT)

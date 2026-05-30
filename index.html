@@ -35,10 +35,22 @@
     <h1>Мои квизы</h1>
     <div class="header-actions">
       <button class="btn btn-secondary btn-sm" onclick="openChangePassModal()">🔑 Пароль</button>
+      <button id="btn-admin" class="btn btn-accent3 btn-sm d-none onclick="showPage('admin-page')">👑 Админ-панель</button>
       <button class="btn btn-primary btn-sm" onclick="openNewQuizModal()">＋ Новый квиз</button>
+      <button class="btn btn-secondary btn-sm" onclick="triggerImport()">📥 Импорт JSON</button>
     </div>
   </div>
   <div id="teacher-quiz-list" class="quiz-list-teacher"></div>
+</div>
+
+
+<!-- ===== ADMIN DASHBOARD ===== -->
+<div id="admin-page" class="page page-col d-none>
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('teacher')">← Назад</button>
+    <h1>Админ-панель</h1>
+  </div>
+  <div id="admin-users-list" class="quiz-cards mt-1"></div>
 </div>
 
 <!-- ===== QUESTION EDITOR PAGE ===== -->
@@ -98,6 +110,13 @@
     <div class="results-label-wrap" id="results-label">баллов</div>
   </div>
   <div class="results-breakdown" id="results-breakdown"></div>
+  
+  <div class="form-group mt-1 max-w-400 lb-wrap" id="lb-submit-wrap" >
+    <input type="text" id="lb-name" placeholder="Твое имя для рейтинга" class="ed-q-box lb-input">
+    <button class="btn btn-primary" onclick="submitResult()" class="w-100">Сохранить результат</button>
+  </div>
+  <div id="leaderboard" class="max-w-400 lb-container" ></div>
+
   <div class="results-actions">
     <button class="btn btn-primary" id="res-retry-btn" onclick="retryCurrentQuiz()">🔁 Ещё раз</button>
     <button class="btn btn-secondary" onclick="showStudentHome()">📋 Все квизы</button>
@@ -112,11 +131,11 @@
   <div class="modal" class="max-w-400">
     <h2>🔐 Вход для преподавателя</h2>
     <div id="login-setup-note" class="login-setup-note d-none">👋 Первый вход! Придумайте логин и пароль.</div>
-    <div class="form-group"><label>Логин</label><input type="text" id="login-user" placeholder="Логин" autocomplete="username"></div>
-    <div class="form-group"><label>Пароль</label>
+    <div class="form-group"><label for="login-user">Логин</label><input type="text" id="login-user" placeholder="Логин" autocomplete="username"></div>
+    <div class="form-group"><label for="login-pass">Пароль</label>
       <div class="relative">
         <input type="password" id="login-pass" placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
-        <button onclick="togglePass('login-pass',this)" class="pass-toggle-btn">👁</button>
+        <button onclick="togglePass('login-pass',this)" class="pass-toggle-btn" title="Показать/скрыть пароль" aria-label="Показать/скрыть пароль">👁</button>
       </div>
     </div>
     <div id="login-err" class="error-msg d-none"></div>
@@ -127,13 +146,25 @@
   </div>
 </div>
 
+
+<!-- ANALYTICS -->
+<div class="modal-overlay hidden" id="analytics-modal">
+  <div class="modal max-w-460">
+    <h2>📊 Аналитика квиза</h2>
+    <div id="analytics-content" class="analytics-box"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('analytics-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <!-- CHANGE PASS -->
 <div class="modal-overlay hidden" id="cp-modal">
   <div class="modal" class="max-w-400">
     <h2>🔑 Сменить пароль</h2>
-    <div class="form-group"><label>Текущий пароль</label><input type="password" id="cp-old"></div>
-    <div class="form-group"><label>Новый пароль</label><input type="password" id="cp-new" placeholder="Мин. 4 символа"></div>
-    <div class="form-group"><label>Повторите</label><input type="password" id="cp-confirm"></div>
+    <div class="form-group"><label for="cp-old">Текущий пароль</label><input type="password" id="cp-old" placeholder="Текущий пароль"></div>
+    <div class="form-group"><label for="cp-new">Новый пароль</label><input type="password" id="cp-new" placeholder="Мин. 4 символа"></div>
+    <div class="form-group"><label for="cp-confirm">Повторите</label><input type="password" id="cp-confirm" placeholder="Повторите пароль"></div>
     <div id="cp-err" class="error-msg d-none"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('cp-modal')">Отмена</button>
@@ -146,8 +177,8 @@
 <div class="modal-overlay hidden" id="quiz-modal">
   <div class="modal" class="max-w-460">
     <h2 id="quiz-modal-title">Новый квиз</h2>
-    <div class="form-group"><label>Название квиза</label><input type="text" id="qm-name" placeholder="Например: История России"></div>
-    <div class="form-group"><label>Описание (необязательно)</label><input type="text" id="qm-desc" placeholder="Краткое описание темы"></div>
+    <div class="form-group"><label for="qm-name">Название квиза</label><input type="text" id="qm-name" placeholder="Например: История России"></div>
+    <div class="form-group"><label for="qm-desc">Описание (необязательно)</label><input type="text" id="qm-desc" placeholder="Краткое описание темы"></div>
     <div id="qm-err" class="error-msg d-none"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('quiz-modal')">Отмена</button>
@@ -161,7 +192,7 @@
   <div class="modal">
     <h2 id="q-modal-title">Новый вопрос</h2>
     <div class="form-group">
-      <label>Текст вопроса</label>
+      <label for="ed-q">Текст вопроса</label>
       <div id="ed-q" contenteditable="true" data-ph="Например: Что является столицей Франции?"
         class="ed-q-box"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></div>

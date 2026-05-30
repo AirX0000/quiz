@@ -182,3 +182,9 @@ label{font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercas
 .bg-c2 { background: var(--c2); }
 .bg-c3 { background: var(--c3); }
 .col-span-2 { grid-column: span 2; }
+/* NEW UTILS */
+.lb-wrap { margin: 0 auto 1.5rem auto; }
+.lb-input { margin-bottom: 0.5rem; width: 100%; text-align: center; }
+.w-100 { width: 100%; }
+.lb-container { margin: 0 auto 2rem auto; text-align: left; }
+.analytics-box { margin-bottom: 1rem; max-height: 50vh; overflow-y: auto; }
