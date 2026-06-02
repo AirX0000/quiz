@@ -72,32 +72,24 @@ ALTER TABLE public.results ENABLE ROW LEVEL SECURITY;
 -- Profiles: 
 CREATE POLICY "Anyone can view profiles" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Admins can do anything on profiles" ON public.profiles FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can do anything on profiles" ON public.profiles FOR ALL USING (public.is_admin());
 
 -- Quizzes:
 CREATE POLICY "Anyone can read quizzes" ON public.quizzes FOR SELECT USING (true);
 CREATE POLICY "Teachers can insert quizzes" ON public.quizzes FOR INSERT WITH CHECK (auth.uid() = teacher_id);
 CREATE POLICY "Teachers can update own quizzes" ON public.quizzes FOR UPDATE USING (auth.uid() = teacher_id);
 CREATE POLICY "Teachers can delete own quizzes" ON public.quizzes FOR DELETE USING (auth.uid() = teacher_id);
-CREATE POLICY "Admins can modify any quiz" ON public.quizzes FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can modify any quiz" ON public.quizzes FOR ALL USING (public.is_admin());
 
 -- Questions:
 CREATE POLICY "Anyone can read questions" ON public.questions FOR SELECT USING (true);
 CREATE POLICY "Teachers can modify their quiz questions" ON public.questions FOR ALL USING (
     EXISTS (SELECT 1 FROM public.quizzes WHERE id = quiz_id AND teacher_id = auth.uid())
 );
-CREATE POLICY "Admins can modify any question" ON public.questions FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can modify any question" ON public.questions FOR ALL USING (public.is_admin());
 
 -- Results:
 CREATE POLICY "Anyone can read results" ON public.results FOR SELECT USING (true);
 CREATE POLICY "Anyone can insert results" ON public.results FOR INSERT WITH CHECK (true);
 -- Normally results aren't deleted, but admins can
-CREATE POLICY "Admins can modify results" ON public.results FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can modify results" ON public.results FOR ALL USING (public.is_admin());
