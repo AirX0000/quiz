@@ -330,7 +330,7 @@ function renderQList() {
         return;
     }
 
-    const Q_LABELS = ['A', 'B', 'C'];
+    const Q_LABELS = ['A', 'B', 'C', 'D'];
     setChildren(wrap, qList.map((qq, i) => {
         const answersEl = el('div', { className: 'q-answers' },
             (qq.answers || []).map((a, j) => {
@@ -376,6 +376,7 @@ function openQEditor(qId, idx) {
     document.getElementById('ed-a').value = qq ? (qq.answers[0] || '') : '';
     document.getElementById('ed-b').value = qq ? (qq.answers[1] || '') : '';
     document.getElementById('ed-c').value = qq ? (qq.answers[2] || '') : '';
+    document.getElementById('ed-d').value = qq ? (qq.answers[3] || '') : '';
     document.getElementById('ed-kw').value = qq ? (qq.keyword || '') : '';
     selCorrectVal = qq ? qq.correct_index : 0;
     updateCorrectBtns();
@@ -384,7 +385,7 @@ function openQEditor(qId, idx) {
 
 function selCorrect(i) { selCorrectVal = i; updateCorrectBtns(); }
 function updateCorrectBtns() {
-    [0, 1, 2].forEach(i => document.getElementById('cb-' + i).classList.toggle('selected', i === selCorrectVal));
+    [0, 1, 2, 3].forEach(i => document.getElementById('cb-' + i).classList.toggle('selected', i === selCorrectVal));
 }
 
 async function saveQuestion() {
@@ -392,15 +393,16 @@ async function saveQuestion() {
     const a = document.getElementById('ed-a').value.trim();
     const b = document.getElementById('ed-b').value.trim();
     const c = document.getElementById('ed-c').value.trim();
+    const d = document.getElementById('ed-d').value.trim();
     const kw = document.getElementById('ed-kw').value.trim();
     const strip = s => s.replace(/<[^>]+>/g, '').trim();
 
-    if (!strip(question_text) || !a || !b || !c) { toast('Заполните все поля!', 'error'); return; }
+    if (!strip(question_text) || !a || !b || !c || !d) { toast('Заполните все поля!', 'error'); return; }
 
     const obj = {
         quiz_id: editingQuizId,
         question_text,
-        answers: [a, b, c],
+        answers: [a, b, c, d],
         correct_index: selCorrectVal,
         keyword: kw,
         order_index: editingQIdx >= 0 ? editingQIdx : 999,
@@ -555,8 +557,8 @@ async function loadQuestion() {
     renderQuestion(quiz, getHistory(qState.idx).imgUrl);
 }
 
-const ANSWER_CLASSES = ['opt-a', 'opt-b', 'opt-c'];
-const ANSWER_LABELS  = ['A', 'B', 'C'];
+const ANSWER_CLASSES = ['opt-a', 'opt-b', 'opt-c', 'opt-d'];
+const ANSWER_LABELS  = ['A', 'B', 'C', 'D'];
 
 function renderQuestion(quiz, imgUrl) {
     const snap = getHistory(qState.idx);
