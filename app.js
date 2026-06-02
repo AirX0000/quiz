@@ -3,22 +3,22 @@
 // ======================================================
 const SUPABASE_URL = 'https://hawlzgobfzsqwaxfpqva.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_moND8o3E68eoh_kEkhPk5A_llIok7nO';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ======================================================
 // GLOBAL STATE
 // ======================================================
-let quizzes = [];
-let currentUser = null;
-let currentProfile = null;
+var quizzes = [];
+var currentUser = null;
+var currentProfile = null;
 
-let editingQuizId = null;
-let editingQIdx = -1;
-let selCorrectVal = 0;
+var editingQuizId = null;
+var editingQIdx = -1;
+var selCorrectVal = 0;
 
-let playQuizId = null;
-let qState = { idx:0, score:0, correct:0, wrong:0, answered:false, history:[] };
-let timerInt = null;
+var playQuizId = null;
+var qState = { idx:0, score:0, correct:0, wrong:0, answered:false, history:[] };
+var timerInt = null;
 
 const UNSPLASH_KEY = 'DWZ8XIHVS9JJJEr_Nj4bdlHvvHSBT3D8QAEbOXuZl0';
 
@@ -85,7 +85,7 @@ function setChildren(container, elements) {
 // AUTH & SESSION
 // ======================================================
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
         await fetchProfile();
@@ -101,7 +101,7 @@ async function checkSession() {
 
 async function fetchProfile() {
     if (!currentUser) return;
-    const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+    const { data } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
     if (data) {
         currentProfile = data;
         const isAdmin = data.role === 'admin';
@@ -128,10 +128,10 @@ async function doLogin() {
 
     if (!email || !p) { errEl.textContent = 'Заполните все поля'; errEl.classList.remove('d-none'); return; }
 
-    let { data, error } = await supabase.auth.signInWithPassword({ email, password: p });
+    let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: p });
 
     if (error && error.message.includes('Invalid login credentials')) {
-        const regRes = await supabase.auth.signUp({ email, password: p });
+        const regRes = await supabaseClient.auth.signUp({ email, password: p });
         if (regRes.error) {
             errEl.textContent = regRes.error.message;
             errEl.classList.remove('d-none');
@@ -152,7 +152,7 @@ async function doLogin() {
 }
 
 async function logoutTeacher() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
     currentProfile = null;
     showPage('splash');
@@ -163,7 +163,7 @@ async function logoutTeacher() {
 // DATA FETCHING
 // ======================================================
 async function fetchQuizzes() {
-    const { data } = await supabase.from('quizzes').select('*, questions(*)').order('created_at', { ascending: false });
+    const { data } = await supabaseClient.from('quizzes').select('*, questions(*)').order('created_at', { ascending: false });
     if (data) quizzes = data;
     updateSplash();
 }
@@ -253,10 +253,10 @@ async function saveQuizMeta() {
     if (!name) { errEl.textContent = 'Введите название'; errEl.classList.remove('d-none'); return; }
 
     if (editingQuizMetaId) {
-        const { error } = await supabase.from('quizzes').update({ name, desc }).eq('id', editingQuizMetaId);
+        const { error } = await supabaseClient.from('quizzes').update({ name, desc }).eq('id', editingQuizMetaId);
         if (error) { toast('Ошибка: ' + error.message, 'error'); return; }
     } else {
-        const { error } = await supabase.from('quizzes').insert({ teacher_id: currentUser.id, name, desc });
+        const { error } = await supabaseClient.from('quizzes').insert({ teacher_id: currentUser.id, name, desc });
         if (error) { toast('Ошибка: ' + error.message, 'error'); return; }
     }
     await fetchQuizzes();
@@ -267,7 +267,7 @@ async function saveQuizMeta() {
 
 async function deleteQuiz(id) {
     if (!confirm('Удалить квиз и все его вопросы?')) return;
-    await supabase.from('quizzes').delete().eq('id', id);
+    await supabaseClient.from('quizzes').delete().eq('id', id);
     await fetchQuizzes();
     renderTeacher();
     toast('Квиз удалён', 'success');
@@ -378,9 +378,9 @@ async function saveQuestion() {
     };
 
     if (editingQuestionId) {
-        await supabase.from('questions').update(obj).eq('id', editingQuestionId);
+        await supabaseClient.from('questions').update(obj).eq('id', editingQuestionId);
     } else {
-        await supabase.from('questions').insert(obj);
+        await supabaseClient.from('questions').insert(obj);
     }
 
     await fetchQuizzes();
@@ -390,7 +390,7 @@ async function saveQuestion() {
 }
 
 async function deleteQ(qId) {
-    await supabase.from('questions').delete().eq('id', qId);
+    await supabaseClient.from('questions').delete().eq('id', qId);
     await fetchQuizzes();
     renderQList();
     toast('Вопрос удалён', 'success');
@@ -674,7 +674,8 @@ async function showResults() {
 
     // Склонение: 1→балл, 2-4→балла, 5+→баллов
     const s = qState.score;
-    const label = s === 1 ? 'балл' : (s >= 2 && s <= 4) ? 'балла' : 'баллов';
+    const m10 = s % 10, m100 = s % 100;
+    const label = (m10 === 1 && m100 !== 11) ? 'балл' : (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) ? 'балла' : 'баллов';
     document.getElementById('results-label').textContent = `${label} из ${total}`;
     document.getElementById('results-emoji').textContent = pct >= 80 ? '🏆' : pct >= 50 ? '🎉' : pct >= 30 ? '😊' : '💪';
 
@@ -705,7 +706,7 @@ async function submitResult() {
     const name  = document.getElementById('lb-name').value.trim() || 'Аноним';
     const total = qState.correct + qState.wrong;
 
-    const { error } = await supabase.from('results').insert({
+    const { error } = await supabaseClient.from('results').insert({
         quiz_id:         playQuizId,
         student_name:    name,
         score:           qState.score,
@@ -721,7 +722,7 @@ async function submitResult() {
 }
 
 async function fetchLeaderboard() {
-    const { data } = await supabase.from('results')
+    const { data } = await supabaseClient.from('results')
         .select('*')
         .eq('quiz_id', playQuizId)
         .order('score', { ascending: false })
@@ -791,7 +792,7 @@ function launchConfetti() {
 // ANALYTICS
 // ======================================================
 async function openAnalytics(quizId) {
-    const { data } = await supabase.from('results').select('*').eq('quiz_id', quizId);
+    const { data } = await supabaseClient.from('results').select('*').eq('quiz_id', quizId);
     const wrap = document.getElementById('analytics-content');
 
     if (!data || data.length === 0) {
@@ -820,7 +821,7 @@ async function openAnalytics(quizId) {
 // ADMIN PANEL
 // ======================================================
 async function loadAdminPanel() {
-    const { data } = await supabase.from('profiles').select('*');
+    const { data } = await supabaseClient.from('profiles').select('*');
     const wrap = document.getElementById('admin-users-list');
     if (!data) return;
 
@@ -878,7 +879,7 @@ function triggerImport() {
             const quizDesc = typeof q.desc === 'string' ? q.desc
                            : typeof q.description === 'string' ? q.description : '';
 
-            const { data: newQuiz, error } = await supabase.from('quizzes').insert({
+            const { data: newQuiz, error } = await supabaseClient.from('quizzes').insert({
                 teacher_id: currentUser.id,
                 name: quizName,
                 desc: quizDesc,
@@ -900,7 +901,7 @@ function triggerImport() {
                         : (typeof importedQ.correct === 'number' ? importedQ.correct : 0);
                     const keyword      = typeof importedQ.keyword === 'string' ? importedQ.keyword : '';
 
-                    await supabase.from('questions').insert({
+                    await supabaseClient.from('questions').insert({
                         quiz_id:       newQuiz.id,
                         question_text: questionText,
                         answers:       answers,
@@ -956,7 +957,7 @@ async function doChangePass() {
     }
 
     // Верифицируем старый пароль через повторный вход
-    const { error: signInErr } = await supabase.auth.signInWithPassword({
+    const { error: signInErr } = await supabaseClient.auth.signInWithPassword({
         email: currentUser.email,
         password: oldPass,
     });
@@ -966,7 +967,7 @@ async function doChangePass() {
         return;
     }
 
-    const { error } = await supabase.auth.updateUser({ password: newPass });
+    const { error } = await supabaseClient.auth.updateUser({ password: newPass });
     if (error) {
         errEl.textContent = error.message;
         errEl.classList.remove('d-none');
