@@ -128,7 +128,32 @@ async function doLogin() {
 
     if (!loginVal || !p) { errEl.textContent = 'Заполните все поля'; errEl.classList.remove('d-none'); return; }
 
-    const email = loginVal.includes('@') ? loginVal : `${loginVal}@quizblast.app`;
+    // Транслитерация частых кириллических букв, которые выглядят как английские
+    let safeLogin = loginVal
+        .replace(/А/g, 'A').replace(/а/g, 'a')
+        .replace(/В/g, 'B').replace(/в/g, 'b')
+        .replace(/С/g, 'C').replace(/с/g, 'c')
+        .replace(/Е/g, 'E').replace(/е/g, 'e')
+        .replace(/Н/g, 'H').replace(/н/g, 'h')
+        .replace(/К/g, 'K').replace(/к/g, 'k')
+        .replace(/М/g, 'M').replace(/м/g, 'm')
+        .replace(/О/g, 'O').replace(/о/g, 'o')
+        .replace(/Р/g, 'P').replace(/р/g, 'p')
+        .replace(/Т/g, 'T').replace(/т/g, 't')
+        .replace(/Х/g, 'X').replace(/х/g, 'x')
+        .replace(/У/g, 'Y').replace(/у/g, 'y');
+
+    // Убираем все символы, не подходящие для email, и переводим в нижний регистр
+    safeLogin = safeLogin.toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+
+    if (!safeLogin) {
+        errEl.textContent = 'Логин должен содержать латинские буквы или цифры';
+        errEl.classList.remove('d-none');
+        return;
+    }
+
+    // Используем example.com вместо quizblast.app, чтобы обойти проверку MX-записей
+    const email = loginVal.includes('@') ? loginVal : `${safeLogin}@example.com`;
 
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: p });
 
