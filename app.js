@@ -40,7 +40,9 @@ const ALLOWED_STYLE_PROPS = new Set([
 ]);
 function applyStyle(el, styleObj) {
     Object.entries(styleObj).forEach(([k, v]) => {
-        if (ALLOWED_STYLE_PROPS.has(k)) el.style[k] = v;
+        if (ALLOWED_STYLE_PROPS.has(k)) {
+            el.style.setProperty(k.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), String(v));
+        }
     });
 }
 
@@ -48,7 +50,7 @@ function applyStyle(el, styleObj) {
  * Санирует HTML-строку через DOMParser — безопасная альтернатива прямому innerHTML.
  * Удаляет скрипты и event-атрибуты, оставляя разметку.
  */
-function sanitizeHtml(html) {
+function setSanitizedHtml(el, html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     // Удаляем все <script> и on*-атрибуты
     doc.querySelectorAll('script').forEach(s => s.remove());
@@ -57,7 +59,7 @@ function sanitizeHtml(html) {
             if (attr.name.startsWith('on')) node.removeAttribute(attr.name);
         });
     });
-    return doc.body.innerHTML;
+    el.replaceChildren(...doc.body.childNodes);
 }
 
 /**
@@ -223,8 +225,8 @@ function renderTeacher() {
             makeBtn('btn btn-danger btn-sm', '🗑', () => deleteQuiz(q.id)),
         ]);
 
-        const descEl = q.desc
-            ? el('div', { className: 'tq-desc', text: q.desc })
+        const descEl = q.description
+            ? el('div', { className: 'tq-desc', text: q.description })
             : null;
 
         const footer = el('div', {
@@ -267,7 +269,7 @@ function openEditQuizModal(id) {
     editingQuizMetaId = id;
     document.getElementById('quiz-modal-title').textContent = 'Редактировать квиз';
     document.getElementById('qm-name').value = q.name;
-    document.getElementById('qm-desc').value = q.desc || '';
+    document.getElementById('qm-desc').value = q.description || '';
     document.getElementById('qm-err').classList.add('d-none');
     openModal('quiz-modal');
 }
@@ -280,10 +282,10 @@ async function saveQuizMeta() {
     if (!name) { errEl.textContent = 'Введите название'; errEl.classList.remove('d-none'); return; }
 
     if (editingQuizMetaId) {
-        const { error } = await supabaseClient.from('quizzes').update({ name, desc }).eq('id', editingQuizMetaId);
+        const { error } = await supabaseClient.from('quizzes').update({ name, description: desc }).eq('id', editingQuizMetaId);
         if (error) { toast('Ошибка: ' + error.message, 'error'); return; }
     } else {
-        const { error } = await supabaseClient.from('quizzes').insert({ teacher_id: currentUser.id, name, desc });
+        const { error } = await supabaseClient.from('quizzes').insert({ teacher_id: currentUser.id, name, description: desc });
         if (error) { toast('Ошибка: ' + error.message, 'error'); return; }
     }
     await fetchQuizzes();
@@ -332,7 +334,7 @@ function renderQList() {
     setChildren(wrap, qList.map((qq, i) => {
         const answersEl = el('div', { className: 'q-answers' },
             (qq.answers || []).map((a, j) => {
-                const label = Q_LABELS[j] !== undefined ? Q_LABELS[j] : String(j);
+                const label = Q_LABELS.at(j) !== undefined ? Q_LABELS.at(j) : String(j);
                 return el('div', {
                     className: 'q-answer' + (j === qq.correct_index ? ' correct' : ''),
                 }, [
@@ -344,7 +346,7 @@ function renderQList() {
 
         // question_text — данные учителя, санируем через DOMParser
         const qTextEl = el('div', { className: 'q-text' });
-        qTextEl.innerHTML = sanitizeHtml(qq.question_text);
+        setSanitizedHtml(qTextEl, qq.question_text);
 
         return el('div', { className: 'q-card' }, [
             el('div', { className: 'q-number', text: `Вопрос ${i + 1}` }),
@@ -370,7 +372,7 @@ function openQEditor(qId, idx) {
 
     document.getElementById('q-modal-title').textContent = isNew ? 'Новый вопрос' : 'Изменить вопрос';
     // question_text — данные учителя, санируем через DOMParser перед вставкой
-    document.getElementById('ed-q').innerHTML = qq ? sanitizeHtml(qq.question_text) : '';
+    setSanitizedHtml(document.getElementById('ed-q'), qq ? qq.question_text : '');
     document.getElementById('ed-a').value = qq ? (qq.answers[0] || '') : '';
     document.getElementById('ed-b').value = qq ? (qq.answers[1] || '') : '';
     document.getElementById('ed-c').value = qq ? (qq.answers[2] || '') : '';
@@ -490,7 +492,7 @@ function renderStudentCards() {
         const qLen = q.questions ? q.questions.length : 0;
         const card = el('div', { className: 'quiz-card' }, [
             el('div', { className: 'qc-title', text: q.name }),
-            q.desc ? el('div', { className: 'qc-meta', style: { marginBottom: '.5rem' }, text: q.desc }) : null,
+            q.description ? el('div', { className: 'qc-meta', style: { marginBottom: '.5rem' }, text: q.description }) : null,
             el('div', { className: 'qc-meta' }, [
                 el('span', { className: 'qc-badge', text: `📝 ${qLen} вопр.` }),
                 el('span', { className: 'qc-badge', text: `⏱ ~${qLen * 20} сек` }),
@@ -571,13 +573,13 @@ function renderQuestion(quiz, imgUrl) {
 
     document.getElementById('quiz-q-label').textContent = `Вопрос ${qState.idx + 1} из ${total} · ${quiz.name}`;
     // question_text — данные учителя, санируем через DOMParser
-    document.getElementById('quiz-q-text').innerHTML = sanitizeHtml(qq.question_text);
+    setSanitizedHtml(document.getElementById('quiz-q-text'), qq.question_text);
     document.getElementById('quiz-img').src = imgUrl;
 
     const grid = document.getElementById('answers-grid-quiz');
     setChildren(grid, qq.answers.map((a, i) => {
-        const labelChar = ANSWER_LABELS[i] !== undefined ? ANSWER_LABELS[i] : String(i);
-        const cls       = ANSWER_CLASSES[i] !== undefined ? ANSWER_CLASSES[i] : '';
+        const labelChar = ANSWER_LABELS.at(i) !== undefined ? ANSWER_LABELS.at(i) : String(i);
+        const cls       = ANSWER_CLASSES.at(i) !== undefined ? ANSWER_CLASSES.at(i) : '';
         const letter = el('span', { className: 'ab-letter', text: labelChar });
         const txt    = el('span', { text: a });
         const btn    = el('button', { className: `answer-btn ${cls}`, id: `ab-${i}` }, [letter, txt]);
@@ -804,7 +806,7 @@ function launchConfetti() {
     const colCount  = CONF_COLS.length;
     for (let i = 0; i < 70; i++) {
         const d   = document.createElement('div');
-        const col = CONF_COLS[Math.floor(Math.random() * colCount)];
+        const col = CONF_COLS.at(Math.floor(Math.random() * colCount));
         d.className = 'conf-dot';
         d.style.left              = Math.random() * 100 + 'vw';
         d.style.background        = col;
