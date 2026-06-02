@@ -115,18 +115,20 @@ function openLoginModal() {
     document.getElementById('login-err').classList.add('d-none');
     document.getElementById('login-setup-note').classList.remove('d-none');
     document.getElementById('login-submit').textContent = 'Войти / Создать';
-    document.getElementById('login-user').placeholder = 'Email';
+    document.getElementById('login-user').placeholder = 'Логин';
     openModal('login-modal');
     setTimeout(() => document.getElementById('login-user').focus(), 100);
 }
 
 async function doLogin() {
-    const email = document.getElementById('login-user').value.trim();
+    const loginVal = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value;
     const errEl = document.getElementById('login-err');
     errEl.classList.add('d-none');
 
-    if (!email || !p) { errEl.textContent = 'Заполните все поля'; errEl.classList.remove('d-none'); return; }
+    if (!loginVal || !p) { errEl.textContent = 'Заполните все поля'; errEl.classList.remove('d-none'); return; }
+
+    const email = loginVal.includes('@') ? loginVal : `${loginVal}@quizblast.app`;
 
     let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: p });
 
